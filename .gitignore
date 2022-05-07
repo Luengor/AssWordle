@@ -1,0 +1,5 @@
+*.lst
+*.rel
+*.map
+*.s19
+test*
