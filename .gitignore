@@ -1,5 +1,6 @@
 *.lst
 *.rel
+*.rst
 *.map
 *.s19
 test*
