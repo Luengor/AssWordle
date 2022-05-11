@@ -16,6 +16,7 @@ cadena_leer:
           .globl    imprime_caracter_color
           .globl    imprime_cadena_wordle
           .globl    imprime_cadena_color
+          .globl    compara_palabras
           .globl    imprime_cadena
           .globl    lee_palabra
 
@@ -157,6 +158,39 @@ imprime_caracter_caracter:
           leax      24,x
           lbsr       imprime_cadena
           puls      x,pc
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; compara_palabras:                                                           ;
+;     compara las palabras apuntadas por x e y                                ;
+;                                                                             ;
+; Entrada: X-primera cadena                                                   ;
+;          Y-segunda cadena                                                   ;
+; Salida:  A-resulado. 0=iguales, 1=distintos                                 ;
+; Afecta:  A                                                                  ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+compara_palabras:
+          pshs      b, x, y
+
+          lda       #0
+          ldb       #0
+cmp_pal_bucle:
+          cmpb      #5
+          beq       cmp_pal_ret
+          incb
+
+          pshs      a
+          lda       ,x+
+          cmpa      ,y+
+          puls      a
+          beq       cmp_pal_bucle
+
+          lda       #1
+          bra       cmp_pal_ret
+
+cmp_pal_ret:
+          puls      b, x, y, pc
 
 
 
