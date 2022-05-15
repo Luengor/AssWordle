@@ -6,8 +6,6 @@
           .ascii    "\33[32m\0\0\0"     ;; nos ayudará más adelante
           .ascii    "\33[37m\0"         
 
-cosa:     .asciz    "pog"
-
 bold:     .asciz    "\33[1m"
 normal:   .asciz    "\33[0m"
 clear:    .asciz    "\33[2J\33[1;1H"
@@ -187,6 +185,12 @@ cmp_pal_bucle:
           incb
 
           pshs      a
+          ;; lda       ,x
+          ;; sta       0xFF00
+          ;; lda       ,y
+          ;; sta       0xFF00
+          ;; lda       #' 
+          ;; sta       0xFF00
           lda       ,x+
           cmpa      ,y+
           puls      a
@@ -207,7 +211,7 @@ cmp_pal_ret:
 ; Salida:  A-resulado. 0=en diccionario, 1=fuera de diccionario               ;
 ; Afecta:  A                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-palabra_en_diccionario:                           ;; Esto no funciona :)
+palabra_en_diccionario:
           pshs      b,x
           ldx       #palabras
 
@@ -222,6 +226,7 @@ ped_bucle:
           lda       #1
 
           leax      5,x
+          bra       ped_bucle
 ped_return:
           puls      b,x,pc
 
