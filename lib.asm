@@ -1,10 +1,12 @@
 ;; Librería con funciones, principalmente de lectura y escritura 
           .module   aslib
  
- colors:  .asciz    "\33[31m\0\0"     ;;  Estos \0 son una mickey
-          .asciz    "\33[33m\0\0"     ;; herramienta sorpresa que
-          .asciz    "\33[32m\0\0"     ;; nos ayudará más adelante
-          .asciz    "\33[37m\0"         
+ colors:  .ascii    "\33[31m\0\0\0"     ;;  Estos \0 son una mickey
+          .ascii    "\33[33m\0\0\0"     ;; herramienta sorpresa que
+          .ascii    "\33[32m\0\0\0"     ;; nos ayudará más adelante
+          .ascii    "\33[37m\0"         
+
+cosa:     .asciz    "pog"
 
 bold:     .asciz    "\33[1m"
 normal:   .asciz    "\33[0m"
@@ -14,6 +16,7 @@ cadena_leer:
           .asciz    "\nPALABRA: "
 
           .globl    imprime_caracter_color
+          .globl    palabra_en_diccionario
           .globl    imprime_cadena_wordle
           .globl    imprime_cadena_color
           .globl    compara_palabras
@@ -24,12 +27,15 @@ cadena_leer:
           .globl    normal
           .globl    clear
 
+          .globl    palabras
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; imprime_cadena:                                                             ;
 ;     imprime por pantalla la cadena apuntada por X                           ;
 ;                                                                             ;
-; Entrada: X-direicwión de comienzo de la cadena                               ;
+; Entrada: X-direicwión de comienzo de la cadena                              ;
 ; Salida:  Ninguna                                                            ;
 ; Afecta:  X                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -61,14 +67,14 @@ imprime_cadena_color:
           ldx       #colors
           lsla lsla lsla
           leax      a,x
-          lbsr       imprime_cadena
+          lbsr      imprime_cadena
           puls      x
 
-          lbsr       imprime_cadena
+          lbsr      imprime_cadena
 
           pshs      x
           ldx       #colors+24
-          lbsr       imprime_cadena
+          lbsr      imprime_cadena
           puls      x,pc
 
 
@@ -140,23 +146,23 @@ icw_ext_fin:
 ; Entrada: B-caracter a imprimir                                              ;
 ;          A-color a usar                                                     ;
 ; Salida:  Ninguna                                                            ;
-; Afecta:  A, B                                                               ;
+; Afecta:  A                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 imprime_caracter_color:
-          cmpa      #3
           pshs      x
+          cmpa      #3
           bhi       imprime_caracter_caracter
           
           ldx       #colors
           lsla lsla lsla
           leax      a,x
-          lbsr       imprime_cadena
+          lbsr      imprime_cadena
           
 imprime_caracter_caracter:
           stb       0xFF00
           ldx       #colors
           leax      24,x
-          lbsr       imprime_cadena
+          lbsr      imprime_cadena
           puls      x,pc
 
 
@@ -195,44 +201,79 @@ cmp_pal_ret:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; palabra_en_diccionario:                                                     ;
+;     Comprueba si la palabra dada se encuentra en el diccionario             ;
+; Entrada: Y-Palabra a comprobar                                              ;
+; Salida:  A-resulado. 0=en diccionario, 1=fuera de diccionario               ;
+; Afecta:  A                                                                  ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+palabra_en_diccionario:                           ;; Esto no funciona :)
+          pshs      b,x
+          ldx       #palabras
+
+ped_bucle:
+          ldb       ,x
+          cmpb      #0
+          beq       ped_return
+
+          lbsr      compara_palabras
+          cmpa      #0
+          beq       ped_return
+          lda       #1
+
+          leax      5,x
+ped_return:
+          puls      b,x,pc
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; lee_palabra:                                                                ;
 ;     lee una palabra de 5 letras mayúsculas por pantalla permitiendo         ;
-;     borrar la letra anterior con un espacio y la almacena en X              ;
+;     borrar la letra anterior con un espacio y la almacena en Y              ;
 ;                                                                             ;
-; Entrada: X-Dirección donde almacenar la cadena                              ;
-; Salida:  X-Cadena leída                                                     ;
-; Afecta:  X                                                                  ;
+; Entrada: Y-Dirección donde almacenar la cadena                              ;
+; Salida:  Y-Cadena leída                                                     ;
+; Afecta:  Y                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 lee_palabra:
-          pshs      a,b,y
-          ldy       #cadena_leer
+          pshs      a,b,x
+          ldx       #cadena_leer
           lda       #0
+
+          lbsr      imprime_cadena
 
 lp_bucle_leer:
           cmpa      #5
           beq       lp_return
 
-          exg       x,y
-          lbsr      imprime_cadena
-          exg       y,x
-          ldb       #0
-          stb       a,x
-          lbsr      imprime_cadena
           
           ldb       0xFF02
           cmpb      #' 
           beq       lp_back
-          stb       a,x
+          stb       a,y
           inca
           bra       lp_bucle_leer
 lp_back:
           ldb       #0
-          stb       a,x
+          stb       a,y
+
+          lbsr      imprime_cadena
+          ldb       #0
+          deca
+          stb       a,y
+          inca
+          exg       x,y
+          lbsr      imprime_cadena
+          exg       y,x
+
           cmpa      #0
           beq       lp_bucle_leer
           deca
+
+
           bra       lp_bucle_leer
 lp_return:
-          puls      a,b,y,pc
+          puls      a,b,x,pc
 
 
