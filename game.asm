@@ -32,11 +32,11 @@ palabra_no_en_diccionario:
 ;     Ejecuta un juego de wordle                                              ;
 ;                                                                             ;
 ; Entrada: X-dirección de comienzo de la palabra correcta                     ;
-; Salida: Ninguna                                                             ;
-; Afecta: X                                                                   ;
+; Salida:  A-Resultado: 0-perdido, 2-ganado                                   ;
+; Afecta: X,A                                                                 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game:
-          pshs      a,b,y
+          pshs      b,y
 
           lda       #0
 game_loop:
@@ -50,13 +50,11 @@ game_loop:
           pshs      y                             ;; s: a - y
           leay      b,y
           lbsr      lee_palabra
-          puls      y                             ;; s: a
-          addb      #'a
 
           ;; Digo si la palabra estaba en el diccionario
-          ;; ESTO NO FUNCIONA
           lbsr      palabra_en_diccionario
-          cmpa      #1
+          puls      y                             ;; s: a
+          cmpa      #0
           beq       imprime
 
           pshs      x                             ;; s: a - x
@@ -125,21 +123,23 @@ bucle_next:
 bucle_next_end:
           puls      x                             ;; s: a
 
-          ;; pshs      a                             ;; s: a - a2
-          ;; ldb       #5
-          ;; mul
-          ;; suba      #5
-          ;; pshs      y                             ;; s: a - a2 - y 
-          ;; leay      b,y
-          ;; lbsr      compara_palabras
-          ;; exg       a,b
-          ;; puls      y                             ;; s: a - a2
-          ;; puls      a                             ;; s: a
+          ;; Compruebo si la palabra era la correcta
           puls      a                             ;; s: 
+          pshs      a                             ;; s: a
 
-          ;; cmpb      #0
-          ;; beq       game_win
+          ldb       #5
+          mul
+          pshs      y                             ;; s: a - y
+          leay      b,y
+          lbsr      compara_palabras
+          cmpa      #0
 
+          puls      y                             ;; s: a 
+          puls      a
+
+          beq       game_win
+
+          ;; Incremento el loop
           inca
           lbra       game_loop
 
@@ -152,7 +152,7 @@ game_win:
           lda       #2
 game_end:
           lbsr      imprime_cadena_color
-          puls      a,b,y,pc
+          puls      b,y,pc
 
 
 

@@ -185,12 +185,6 @@ cmp_pal_bucle:
           incb
 
           pshs      a
-          ;; lda       ,x
-          ;; sta       0xFF00
-          ;; lda       ,y
-          ;; sta       0xFF00
-          ;; lda       #' 
-          ;; sta       0xFF00
           lda       ,x+
           cmpa      ,y+
           puls      a
@@ -208,7 +202,7 @@ cmp_pal_ret:
 ; palabra_en_diccionario:                                                     ;
 ;     Comprueba si la palabra dada se encuentra en el diccionario             ;
 ; Entrada: Y-Palabra a comprobar                                              ;
-; Salida:  A-resulado. 0=en diccionario, 1=fuera de diccionario               ;
+; Salida:  A-resulado. 1=en diccionario, 0=fuera de diccionario               ;
 ; Afecta:  A                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 palabra_en_diccionario:
