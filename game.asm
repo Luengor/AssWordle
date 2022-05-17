@@ -32,7 +32,7 @@ palabra_no_en_diccionario:
 ;     Ejecuta un juego de wordle                                              ;
 ;                                                                             ;
 ; Entrada: X-dirección de comienzo de la palabra correcta                     ;
-; Salida:  A-Resultado: 0-perdido, 1-ganado                                   ;
+; Salida:  A-Resultado: 0: ningún problema, r: reset, v: vuelta al menú       ;
 ; Afecta: X,A                                                                 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 game:
@@ -41,7 +41,7 @@ game:
           lda       #0
 game_loop:
           cmpa      #6                            ;; s:
-          lbeq       game_loss
+          lbeq      game_loss
           pshs      a                             ;; s: a
 
           ;; Pido palabra
@@ -51,6 +51,11 @@ game_loop:
           leay      b,y
           pshs      a                             ;; s: a - y - a2
           lbsr      lee_palabra
+
+          ;; Compruebo que no hemos tendríamos que acabar
+          cmpa      #0
+          lbne      game_end_mal
+
           puls      a                             ;; s: a - y
 
           ;; Digo si la palabra estaba en el diccionario
@@ -145,17 +150,20 @@ bucle_next_end:
           inca
           lbra       game_loop
 
+game_end_mal:
+          leas      4,s
+          puls      b,x,y,pc
 
 game_loss:
           ldx       #loss
           lda       #0
-          lbsr      imprime_cadena_color
           bra       game_end
 game_win:
           ldx       #win
-          lda       #1
-          lbsr      imprime_cadena_color
+          lda       #2
 game_end:
+          lbsr      imprime_cadena_color
+          lda       #0
           puls      b,x,y,pc
 
 

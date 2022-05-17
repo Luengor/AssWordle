@@ -271,6 +271,11 @@ lp_invalido:
           ;; Si no se cumple ningún caso, ignoro el input
           lbsr      imprime_cadena
           exg       x,y
+          pshs      a,b
+          ldb       #0
+          inca
+          stb       a,x
+          puls      a,b
           lbsr      imprime_cadena
           exg       x,y
           bra       lp_bucle_leer
@@ -279,7 +284,6 @@ lp_valido:
           ;; Si es espacio borro
           cmpb      #' 
           beq       lp_back
-          ;; Si es v devuel
 
           stb       a,y
           inca
@@ -305,7 +309,9 @@ lp_back:
 
 lp_return_mal:
           exg       a,b
+          puls      b,x,pc
 lp_return:
+          lda       #0
           puls      b,x,pc
 
 

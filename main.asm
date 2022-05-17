@@ -5,10 +5,12 @@
           .org      0x1000
 
 texto_menu:
-          .ascii  "\nWORDLE (v1.00)\n"
+          .ascii  "\nWORDLE (v2.00)\n"
           .ascii    "1) Ver Diccionario\n"
           .ascii    "2) Jugar\n"
           .ascii    "S) Salir\n\0"
+texto_reiniciar:
+          .ascii    "\n\nREINICIAR..."
 
           .globl    imprime_cadena
           .globl    palabras
@@ -65,7 +67,25 @@ jugar:
           ;; Empiezo un juego
           ldy       #0xF000
           lbsr      game
+
+          ;; Compruebo si ha terminado bien
+          cmpa      #0
+          beq       fin_juego
+          
+          cmpa      #'v
+          beq       menu
+
+          pshs      a,x
+          ldx       #texto_reiniciar
+          lda       #1
+          lbsr      imprime_cadena
+          puls      a,x
+          
+          bra       jugar
+
+fin_juego:
           ldb       0xFF02
+
           ;; Incremento la palabra
           leax      5,x
           lda       ,x
