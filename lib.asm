@@ -8,7 +8,7 @@
 
 bold:     .asciz    "\33[1m"
 normal:   .asciz    "\33[0m"
-clear:    .asciz    "\33[2J\33[1;1H"
+clear:    .asciz    "\33[2J"
 
 cadena_leer:
           .asciz    "\nPALABRA: "
@@ -33,7 +33,7 @@ cadena_leer:
 ; imprime_cadena:                                                             ;
 ;     imprime por pantalla la cadena apuntada por X                           ;
 ;                                                                             ;
-; Entrada: X-direicwión de comienzo de la cadena                              ;
+; Entrada: X-dirección de comienzo de la cadena                               ;
 ; Salida:  Ninguna                                                            ;
 ; Afecta:  X                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -233,10 +233,11 @@ ped_return:
 ;                                                                             ;
 ; Entrada: Y-Dirección donde almacenar la cadena                              ;
 ; Salida:  Y-Cadena leída                                                     ;
+;          A-Estado de la lectura: 0-correcta, 'v-v, 'r-r                     ;
 ; Afecta:  Y                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 lee_palabra:
-          pshs      a,b,x
+          pshs      b,x
           ldx       #cadena_leer
           lda       #0
 
@@ -246,10 +247,40 @@ lp_bucle_leer:
           cmpa      #5
           beq       lp_return
 
-          
+          ;; Leo caracter
           ldb       0xFF02
+          ;; Compruebo que esté entre A y Z
+          cmpb      #'A
+          blo       lp_invalido
+          cmpb      #'Z
+          bhi       lp_invalido
+          bra       lp_valido
+
+lp_invalido:
+          ;; Si es espacio borro
           cmpb      #' 
           beq       lp_back
+
+          ;; Si es v o r, return_mal
+          cmpb      #'v
+          beq       lp_return_mal
+
+          cmpb      #'r
+          beq       lp_return_mal
+
+          ;; Si no se cumple ningún caso, ignoro el input
+          lbsr      imprime_cadena
+          exg       x,y
+          lbsr      imprime_cadena
+          exg       x,y
+          bra       lp_bucle_leer
+
+lp_valido:
+          ;; Si es espacio borro
+          cmpb      #' 
+          beq       lp_back
+          ;; Si es v devuel
+
           stb       a,y
           inca
           bra       lp_bucle_leer
@@ -270,9 +301,11 @@ lp_back:
           beq       lp_bucle_leer
           deca
 
-
           bra       lp_bucle_leer
+
+lp_return_mal:
+          exg       a,b
 lp_return:
-          puls      a,b,x,pc
+          puls      b,x,pc
 
 
