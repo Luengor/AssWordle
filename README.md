@@ -2,7 +2,15 @@
 in its purest of forms
 
 <br></br>
+### Notas del parche de la versión 4
+* Encontrado y corregido el error mencionado en la versión 2
+* Ahora al leer la palabra se cargan 6 \0 en Y para evitar errores visuales
+* La pantalla se limpia y vuelve arriba en vez de quedarse abajo
+* Se permite jugar con otra palabra inmediatamente después de jugar
+* Ahora aparece una tabla vacía nada más empezar el juego
+* La pantalla se limpia antes al empezar un juego
 
+<br></br>
 ### Notas del parche de la versión 3
 * Función para imprimir números en decimal todo cool 😎
 * El diccionario ya no se abre con cualquier opción

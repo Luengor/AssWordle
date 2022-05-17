@@ -13,8 +13,8 @@ comienzo_linea:
           .asciz    " | "
 linea_vacia:
           .asciz    " |       |\n"
-win:      .asciz    "HAS ACERTADO LA PALABRA\n\n"
-loss:     .asciz    "HAS TERMINADO TUS INTENTOS."
+win:      .asciz    "HAS ACERTADO LA PALABRA\n"
+loss:     .asciz    "HAS TERMINADO TUS INTENTOS\n"
 
 palabra_no_en_diccionario:
           .asciz    "\n\nLa palabra no se encuentra en el diccionario."
@@ -27,6 +27,8 @@ palabra_no_en_diccionario:
           .globl    imprime_cadena_wordle
           .globl    palabra_en_diccionario
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; game_loop:                                                                  ;
 ;     Ejecuta un juego de wordle                                              ;
@@ -38,7 +40,10 @@ palabra_no_en_diccionario:
 game:
           pshs      b,x,y
 
+          lda       #-1
+          lbsr      imprime_tabla
           lda       #0
+
 game_loop:
           cmpa      #6                            ;; s:
           lbeq      game_loss
@@ -52,7 +57,7 @@ game_loop:
           pshs      a                             ;; s: a - y - a2
           lbsr      lee_palabra
 
-          ;; Compruebo que no hemos tendríamos que acabar
+          ;; Compruebo que la palabra se ha leído bien
           cmpa      #0
           lbne      game_end_mal
 
@@ -69,69 +74,11 @@ game_loop:
           lbsr      imprime_cadena
           puls      x                             ;; s: a
 
-imprime: 
-          ;; Imprimo la cabeza de la tabla
-          pshs      x                             ;; s: a - x
-          ldx       #comienzo_tabla
-          lbsr      imprime_cadena
-          puls      x                             ;; s: a
-
-          lda       #0
-bucle_anterior:
-          cmpa      ,s
-          bhi       bucle_anterior_end
-          pshs      a                             ;; s: a - a2          
-
-          ;; Imprimo el número de línea
-          adda      #'1
-          sta       0xFF00
-          suba      #'1
-
-          ;; Imprimo el comienzo de linea
-          pshs      x                             ;; s: a - a2 - x
-          ldx       #comienzo_linea
-          lbsr      imprime_cadena
-          puls      x                             ;; s: a - a2
-
-          ;; Imprimo la palabra
-          ldb       #5
-          mul
-          pshs      y                             ;; s: a - a2 - y
-          leay      b,y
-          lbsr      imprime_cadena_wordle
-          puls      y                             ;; s: a - a2
-
-          ;; Imprimo el fin de linea
-          pshs      x                             ;; s: a - a2 - x
-          ldx       #fin_linea
-          lbsr      imprime_cadena
-          puls      x                             ;; s: a - a2
-
-          ;; Incremento
-          puls      a                             ;; s: a
-          inca
-          bra       bucle_anterior
-
-bucle_anterior_end:
-
-          ;; Imprimo líneas vacías
-          pshs      x                             ;; s: a - x
-          ldx       #linea_vacia
-bucle_next:
-          cmpa      #6
-          beq       bucle_next_end
-          adda      #'1
-          sta       0xFF00
-          suba      #'1
-          lbsr      imprime_cadena
-          inca
-          bra       bucle_next 
-
-bucle_next_end:
-          puls      x                             ;; s: a
+imprime:
+          puls      a                             ;; s:
+          lbsr      imprime_tabla
 
           ;; Compruebo si la palabra era la correcta
-          puls      a                             ;; s: 
           pshs      a                             ;; s: a
 
           ldb       #5
@@ -166,5 +113,84 @@ game_end:
           lda       #0
           puls      b,x,y,pc
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; imprime_tabla                                                              ;
+;     imprime la tabla de wordle con las palabras escritas anteriormente     ;
+; Entrada: X-Palabra correcta                                                ;
+;          Y-Puntero a la lista de palabras introducidas                     ;
+;          A-Palabra en la que nos encontramos                               ;
+; Salida:  Ninguna                                                           ;
+; Afecta:  Nada                                                              ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+imprime_tabla:
+          pshs      b
+
+          pshs      a                             ;; s: a
+          ;; Imprimo la cabeza de la tabla
+          pshs      x                             ;; s: a - x
+          ldx       #comienzo_tabla
+          lbsr      imprime_cadena
+          puls      x                             ;; s: a
+
+          lda       #0
+bucle_anterior:
+          cmpa      ,s
+          bgt       bucle_anterior_end
+          pshs      a                             ;; s: a - a2          
+
+          ;; Imprimo el número de línea
+          adda      #'1
+          sta       0xFF00
+          suba      #'1
+
+          ;; Imprimo el comienzo de linea
+          pshs      x                             ;; s: a - a2 - x
+          ldx       #comienzo_linea
+          lbsr      imprime_cadena
+          puls      x                             ;; s: a - a2
+
+          ;; Imprimo la palabra
+          ldb       #5
+          mul
+          pshs      y                             ;; s: a - a2 - y
+          leay      b,y
+          lbsr      imprime_cadena_wordle
+          puls      y                             ;; s: a - a2
+
+          ;; Imprimo el fin de linea
+          pshs      x                             ;; s: a - a2 - x
+          ldx       #fin_linea
+          lbsr      imprime_cadena
+          puls      x                             ;; s: a - a2
+
+          ;; Incremento
+          puls      a                             ;; s: a
+          inca
+          bra       bucle_anterior
+
+bucle_anterior_end:
+          ;; Imprimo líneas vacías
+          pshs      x                             ;; s: a - x
+          ldx       #linea_vacia
+bucle_next:
+          cmpa      #6
+          beq       bucle_next_end
+          adda      #'1
+          sta       0xFF00
+          suba      #'1
+          lbsr      imprime_cadena
+          inca
+          bra       bucle_next 
+
+bucle_next_end:
+          puls      x                             ;; s: a
+          puls      a
+
+          ldb       #10
+          stb       0xFF00
+
+          puls      b,pc
 
 

@@ -8,7 +8,9 @@ texto_menu:
           .ascii  "\nWORDLE (v3.00)\n"
           .ascii    "1) Ver Diccionario\n"
           .ascii    "2) Jugar\n"
-          .ascii    "S) Salir\n\0"
+          .asciz    "S) Salir\n"
+text_volver_jugar:
+          .asciz    "Seguir jugando? [y/N]" 
 texto_reiniciar:
           .asciz    "\n\nREINICIAR..."
 texto_diccionario_inicio:
@@ -51,13 +53,13 @@ menu:
 
           ;; Salto a donde corresponda
           cmpb      #'1
-          beq       diccionario
+          lbeq      diccionario
           cmpb      #'2
-          beq       jugar
+          lbeq      jugar
           cmpb      #'S
-          beq       acabar
+          lbeq      acabar
           cmpb      #'s
-          beq       acabar
+          lbeq      acabar
 
           bra       menu
 
@@ -102,8 +104,12 @@ diccionario_fin:
           bra       menu
 
 jugar:
-          ldb       #'\n
-          stb       0xFF00
+          ;; Limpio la pantalla
+          pshs      x
+          ldx       #clear
+          lbsr      imprime_cadena
+          puls      x
+
           ;; Empiezo un juego
           ldy       #0xF000
           lbsr      game
@@ -113,7 +119,7 @@ jugar:
           beq       fin_juego
           
           cmpa      #'v
-          beq       menu
+          lbeq       menu
 
           pshs      a,x
           ldx       #texto_reiniciar
@@ -124,16 +130,27 @@ jugar:
           bra       jugar
 
 fin_juego:
-          ldb       0xFF02
-
           ;; Incremento la palabra
           leax      5,x
           lda       ,x
           cmpa      #0
-          lbne       menu
+          lbne      volver_a_jugar
           ldx       #palabras
-          lbra       menu
+          lbra      volver_a_jugar 
 
+volver_a_jugar:
+          ;; Pregunto si se vuelve a jugar
+          pshs      x
+          ldx       #text_volver_jugar
+          lbsr      imprime_cadena
+          puls      x
+
+          ;; y/n
+          lda       0xFF02
+          cmpa      #'y
+          lbne       menu
+
+          lbra      jugar
 
 acabar:   
           ;; Quito la negrita

@@ -8,7 +8,7 @@
 
 bold:     .asciz    "\33[1m"
 normal:   .asciz    "\33[0m"
-clear:    .asciz    "\33[2J"
+clear:    .asciz    "\33[2J\33[1;1H"
 
 cadena_leer:
           .asciz    "\nPALABRA: "
@@ -293,10 +293,22 @@ ped_return:
 ; Entrada: Y-Dirección donde almacenar la cadena                              ;
 ; Salida:  Y-Cadena leída                                                     ;
 ;          A-Estado de la lectura: 0-correcta, 'v-v, 'r-r                     ;
-; Afecta:  Y                                                                  ;
+; Afecta:  Y,A                                                                ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 lee_palabra:
           pshs      b,x
+
+          lda       #0
+          ldb       #0
+          ;; Limpio Y para que se imprima todo correctamente 
+lp_bucle_limpiar:
+          cmpa      #6
+          beq       lp_bucle_limpiar_fin
+          stb       a,y 
+          inca
+          bra       lp_bucle_limpiar
+lp_bucle_limpiar_fin:
+
           ldx       #cadena_leer
           lda       #0
 
@@ -330,11 +342,6 @@ lp_invalido:
           ;; Si no se cumple ningún caso, ignoro el input
           lbsr      imprime_cadena
           exg       x,y
-          pshs      a,b
-          ldb       #0
-          inca
-          stb       a,x
-          puls      a,b
           lbsr      imprime_cadena
           exg       x,y
           bra       lp_bucle_leer
@@ -349,13 +356,11 @@ lp_valido:
           bra       lp_bucle_leer
 lp_back:
           ldb       #0
-          stb       a,y
+          deca
+          stb       a,y       ;; Borro la letra
+          inca
 
           lbsr      imprime_cadena
-          ldb       #0
-          deca
-          stb       a,y
-          inca
           exg       x,y
           lbsr      imprime_cadena
           exg       y,x
