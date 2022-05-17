@@ -14,7 +14,7 @@ comienzo_linea:
 linea_vacia:
           .asciz    " |       |\n"
 win:      .asciz    "HAS ACERTADO LA PALABRA\n\n"
-loss:     .asciz    "HAS TERMINADO TUS INTENTOS\n\n"
+loss:     .asciz    "HAS TERMINADO TUS INTENTOS."
 
 palabra_no_en_diccionario:
           .asciz    "\n\nLa palabra no se encuentra en el diccionario."
@@ -151,7 +151,7 @@ bucle_next_end:
           lbra       game_loop
 
 game_end_mal:
-          leas      4,s
+          leas      4,s       ;; Culpable de algo, pero no lo puedo demostrar
           puls      b,x,y,pc
 
 game_loss:

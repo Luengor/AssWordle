@@ -16,8 +16,10 @@ cadena_leer:
           .globl    imprime_caracter_color
           .globl    palabra_en_diccionario
           .globl    imprime_cadena_wordle
+          .globl    imprime_valor_decimal
           .globl    imprime_cadena_color
           .globl    compara_palabras
+          .globl    imprime_palabra
           .globl    imprime_cadena
           .globl    lee_palabra
 
@@ -27,6 +29,42 @@ cadena_leer:
 
           .globl    palabras
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; imprime_valor_decimal:                                                      ;
+;     imprime el valor del registro a por pantalla en decimal                 ;
+; Entrada: A-el valor a imprimir                                              ;
+; Salida:  Ninguna                                                            ;
+; Afecta:  Nada                                                               ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+imprime_valor_decimal:
+          pshs      a,b
+
+          ;; Divido entre 10 y saco el cociente y resto 
+          ldb       #10
+          pshs      b
+          ldb       #0
+ivl_divide_bucle:
+          cmpa      ,s
+          blo       ivl_divide_fin
+          incb
+          suba      ,s
+          bra       ivl_divide_bucle
+ivl_divide_fin:
+          exg       a,b
+          leas      1,s       ;; pull, pero sin hacer pull
+
+          ;; Primera cifra
+          adda      #'0
+          sta       0xFF00
+
+          ;; Segunda cifra
+          addb      #'0
+          stb       0xFF00
+
+          puls      a,b,pc
+          
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -132,6 +170,27 @@ icw_ext_inc:
           bra       icw_ext_inicio
 icw_ext_fin:
           puls      a,b,y,pc
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; imprime_palabra                                                             ;
+;     imprime por pantalla la palabra de 5 letras a la que apunta X           ;
+; Entrada: X-palabra                                                          ;
+; Salida:  Ninguna                                                            ;
+; Afecta:  Nada                                                               ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+imprime_palabra:
+          pshs      a,b
+          lda       #0
+ip_bucle:
+          cmpa      #5
+          beq       ip_return
+          ldb       a,x
+          stb       0xFF00
+          inca
+          bra       ip_bucle
+ip_return:
+          puls      a,b,pc
 
 
 
