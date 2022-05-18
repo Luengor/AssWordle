@@ -1,11 +1,13 @@
 ;; Modulo principal.
 ;; El menú está aquí
+
           .module   main
           .area     MAIN (ABS)
-          .org      0x1500
+          .org      0x1000
 
+;; Distintas cadenas
 texto_menu:
-          .ascii  "\nWORDLE (v3.00)\n"
+          .ascii  "\nWORDLE (v4.10)\n"
           .ascii    "1) Ver Diccionario\n"
           .ascii    "2) Jugar\n"
           .asciz    "S) Salir\n"
@@ -18,6 +20,7 @@ texto_diccionario_inicio:
 texto_diccionario_final:
           .asciz    "Numero de palabras = "
 
+;; Importadiones globales
           .globl    imprime_valor_decimal
           .globl    imprime_cadena_color
           .globl    imprime_palabra
@@ -28,9 +31,7 @@ texto_diccionario_final:
           .globl    bold
           .globl    game
 
-;; s -> 0xFF00
-;; x -> 0xF000
-;; y -> 0xEA00
+
 main:
           lds       #0xFF00
 
@@ -61,6 +62,7 @@ menu:
           cmpb      #'s
           lbeq      acabar
 
+          ;; Si ninguna opción del menú coincide, vuelve al menu
           bra       menu
 
 diccionario:
@@ -79,6 +81,7 @@ diccionario_bucle:
           cmpb      #0
           beq       diccionario_fin
           
+          ;; Imprimo palabra a palabra
           lbsr      imprime_palabra
           pshs      b
           ldb       #'\n
@@ -90,7 +93,6 @@ diccionario_bucle:
 
           bra       diccionario_bucle
 diccionario_fin:
-          
           ;; Imprimo el número de palabras
           ldx       #texto_diccionario_final
           lbsr      imprime_cadena
@@ -118,15 +120,16 @@ jugar:
           cmpa      #0
           beq       fin_juego
           
+          ;; Volver al menú
           cmpa      #'v
           lbeq       menu
-
+          
+          ;; Reinicio
           pshs      a,x
           ldx       #texto_reiniciar
           lda       #1
           lbsr      imprime_cadena_color
           puls      a,x
-          
           bra       jugar
 
 fin_juego:

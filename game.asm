@@ -1,12 +1,12 @@
 ;; Este módulo contiene el loop del juego.
           .module   game
 
+;; Cadenas
 comienzo_tabla:
           .ascii    "\n\n  | JUEGO |\n"
           .ascii        "-----------\n"
           .ascii        "  | 12345 |\n"
           .asciz        "-----------\n"
-
 fin_linea:
           .asciz    " |\n"
 comienzo_linea:
@@ -19,6 +19,7 @@ loss:     .asciz    "HAS TERMINADO TUS INTENTOS\n"
 palabra_no_en_diccionario:
           .asciz    "\n\nLa palabra no se encuentra en el diccionario."
 
+;; Globales
           .globl    game
           .globl    lee_palabra
           .globl    imprime_cadena
@@ -40,6 +41,7 @@ palabra_no_en_diccionario:
 game:
           pshs      b,x,y
 
+          ;; Se establece A = -1 para imprimir una tabla vacía
           lda       #-1
           lbsr      imprime_tabla
           lda       #0
@@ -75,21 +77,20 @@ game_loop:
           puls      x                             ;; s: a
 
 imprime:
+          ;; Imprime la tabla
           puls      a                             ;; s:
           lbsr      imprime_tabla
 
           ;; Compruebo si la palabra era la correcta
-          pshs      a                             ;; s: a
+          pshs      a,y                           ;; s: y - a
 
           ldb       #5
           mul
-          pshs      y                             ;; s: a - y
           leay      b,y
           lbsr      compara_palabras
           cmpa      #0
 
-          puls      y                             ;; s: a 
-          puls      a
+          puls      a,y                           ;; s:
 
           beq       game_win
 
@@ -98,7 +99,8 @@ imprime:
           lbra       game_loop
 
 game_end_mal:
-          leas      4,s       ;; Culpable de algo, pero no lo puedo demostrar
+          ;; Quedaban bytes de variables en el stack, pero no los necesitamos
+          leas      4,s
           puls      b,x,y,pc
 
 game_loss:
@@ -109,6 +111,7 @@ game_win:
           ldx       #win
           lda       #2
 game_end:
+          ;; Imprimo la cadena de resultado
           lbsr      imprime_cadena_color
           lda       #0
           puls      b,x,y,pc
@@ -125,9 +128,8 @@ game_end:
 ; Afecta:  Nada                                                              ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 imprime_tabla:
-          pshs      b
+          pshs      b, a                          ;; s: a
 
-          pshs      a                             ;; s: a
           ;; Imprimo la cabeza de la tabla
           pshs      x                             ;; s: a - x
           ldx       #comienzo_tabla
@@ -186,11 +188,11 @@ bucle_next:
 
 bucle_next_end:
           puls      x                             ;; s: a
-          puls      a
 
           ldb       #10
           stb       0xFF00
 
-          puls      b,pc
+          puls      a,b,pc
+
 
 

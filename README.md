@@ -2,6 +2,10 @@
 in its purest of forms
 
 <br></br>
+### Parche de balance 4.1 
+* Optimizado, limpiado y documentado los archivos main y game
+
+<br></br>
 ### Notas del parche de la versión 4
 * Encontrado y corregido el error mencionado en la versión 2
 * Ahora al leer la palabra se cargan 6 \0 en Y para evitar errores visuales
