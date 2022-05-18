@@ -2,6 +2,10 @@
 in its purest of forms
 
 <br></br>
+### Parche de balance 4.2 
+* Optimizado, limpiado y documentado el archivo lib
+
+<br></br>
 ### Parche de balance 4.1 
 * Optimizado, limpiado y documentado los archivos main y game
 

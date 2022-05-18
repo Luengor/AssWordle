@@ -77,13 +77,13 @@ ivl_divide_fin:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 imprime_cadena:
           pshs      a,x
-imprime_cadena_sgte:
+ic_sgte:
           lda       ,x+          
           cmpa      #0
-          beq       imprime_cadena_return
+          beq       ic_return
           sta       0xFF00
-          bra       imprime_cadena_sgte
-imprime_cadena_return:
+          bra       ic_sgte
+ic_return:
           puls      a,x,pc
 
 
@@ -94,22 +94,22 @@ imprime_cadena_return:
 ;     especificado en a                                                       ;
 ;                                                                             ;
 ; Entrada: X-dirección de comienzo de la cadena                               ;
-;          A-color a usar (0 - 3) rojo, amarillo, verde, blanco, mantiene     ;
+;          A-color a usar (0 - 3) rojo, amarillo, verde, blanco               ;
 ; Salida:  Ninguna                                                            ;
 ; Afecta:  A                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 imprime_cadena_color:
           pshs      x
           ldx       #colors
-          lsla lsla lsla
-          leax      a,x
+          lsla lsla lsla            ;; Mickey herramienta usada aquí,
+          leax      a,x             ;; explicada en el pdf.
           lbsr      imprime_cadena
           puls      x
 
           lbsr      imprime_cadena
 
           pshs      x
-          ldx       #colors+24
+          ldx       #colors+24      ;; 8 * 3 = 24
           lbsr      imprime_cadena
           puls      x,pc
 
@@ -127,26 +127,31 @@ imprime_cadena_wordle:
           pshs      a,b,y
           lda       #0
 
+          ;; Bucle para recorrer la palabra sugerida ( Y )
 icw_ext_inicio:
           cmpa      #5
           beq       icw_ext_fin
-          pshs      x
-          pshs      a
+          pshs      a,x
 
           lda       #0
           ldb       #0
+          ;; Bucle para recorrer la palabra correcta ( X )
 icw_int_inicio:
           cmpb      #5
           beq       icw_int_fin
           pshs      b
 
+          ;; Comparo si son iguales
           ldb       ,x
           cmpb      ,y
           puls      b
           bne       icw_int_inc
+          ;; Si lo son, miro si están en el mismo sitio
           cmpb      ,s
           bne       icw_distinto_sitio
-          adda      #10
+          ;; Si lo están, sumo 6 a A y salto al fin del bucle, si no, solo 1
+          adda      #6
+          bra       icw_int_fin
 icw_distinto_sitio:
           inca
 icw_int_inc:
@@ -154,22 +159,25 @@ icw_int_inc:
           leax      1,x
           bra       icw_int_inicio
 icw_int_fin:
-          cmpa      #10
+          ;; Comparo A con 6 para saber si la letra estaba en el mismo sitio
+          cmpa      #6
           blo       icw_lo1
           lda       #2
           bra       icw_ext_inc
+          ;; Si no, comparo con 0 para ver si estaba en la palabra
 icw_lo1:  cmpa      #0
           beq       icw_ext_inc
           lda       #1
 icw_ext_inc:
+          ;; Imprimo el caracter a color
           ldb       ,y+
           lbsr      imprime_caracter_color
-          puls      a
-          puls      x
+          puls      a,x
           inca
           bra       icw_ext_inicio
 icw_ext_fin:
           puls      a,b,y,pc
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -193,7 +201,7 @@ ip_return:
           puls      a,b,pc
 
 
-
+ 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; imprime_caracter_color:                                                     ;
 ;     imprime por pantalla el caracter en b con el color que se especifique   ;
@@ -208,14 +216,14 @@ ip_return:
 imprime_caracter_color:
           pshs      x
           cmpa      #3
-          bhi       imprime_caracter_caracter
+          bhi       ic_caracter
           
           ldx       #colors
-          lsla lsla lsla
+          lsla lsla lsla            ;; Mickey
           leax      a,x
           lbsr      imprime_cadena
           
-imprime_caracter_caracter:
+ic_caracter:
           stb       0xFF00
           ldx       #colors
           leax      24,x
@@ -238,21 +246,23 @@ compara_palabras:
 
           lda       #0
           ldb       #0
-cmp_pal_bucle:
+          ;; Recorro ambas palabras a la vez
+cp_bucle:
           cmpb      #5
-          beq       cmp_pal_ret
+          beq       cp_ret
           incb
 
           pshs      a
           lda       ,x+
           cmpa      ,y+
           puls      a
-          beq       cmp_pal_bucle
+          beq       cp_bucle
 
+          ;; Si en algún caracter las letras son distintas, devuelvo falso
           lda       #1
-          bra       cmp_pal_ret
+          bra       cp_ret
 
-cmp_pal_ret:
+cp_ret:
           puls      b, x, y, pc
 
 
@@ -268,11 +278,13 @@ palabra_en_diccionario:
           pshs      b,x
           ldx       #palabras
 
+          ;; Recorro las palabras hasta encontrar un \0
 ped_bucle:
           ldb       ,x
           cmpb      #0
           beq       ped_return
 
+          ;; Si las palabras son iguales devuelvo 1
           lbsr      compara_palabras
           cmpa      #0
           beq       ped_return
@@ -314,6 +326,7 @@ lp_bucle_limpiar_fin:
 
           lbsr      imprime_cadena
 
+          ;; Entro en un bucle para leer las letras hasta que haya 5
 lp_bucle_leer:
           cmpa      #5
           beq       lp_return
@@ -329,7 +342,7 @@ lp_bucle_leer:
 
 lp_invalido:
           ;; Si es espacio borro
-          cmpb      #' 
+          cmpb      #32
           beq       lp_back
 
           ;; Si es v o r, return_mal
@@ -348,23 +361,26 @@ lp_invalido:
 
 lp_valido:
           ;; Si es espacio borro
-          cmpb      #' 
+          cmpb      #32
           beq       lp_back
 
           stb       a,y
           inca
           bra       lp_bucle_leer
 lp_back:
+          ;; "Borro" la letra
           ldb       #0
           deca
-          stb       a,y       ;; Borro la letra
+          stb       a,y
           inca
 
+          ;; Vuelvo a imprimir PALABRA: y lo escrito antes
           lbsr      imprime_cadena
           exg       x,y
           lbsr      imprime_cadena
           exg       y,x
 
+          ;; Decremento la letra actual si es distinta de 0
           cmpa      #0
           beq       lp_bucle_leer
           deca
