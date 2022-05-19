@@ -153,6 +153,9 @@ acabar:
           ldx       #normal
           lbsr      imprime_cadena
 
+          ldb       #10 
+          stb       0xFF00
+
           ;; Fin
           clra
           sta       0xFF01
