@@ -7,14 +7,12 @@
 
 ;; Distintas cadenas
 texto_menu:
-          .ascii  "\nWORDLE (v4.20)\n"
+          .ascii  "\nWORDLE\n"
           .ascii    "1) Ver Diccionario\n"
           .ascii    "2) Jugar\n"
           .asciz    "S) Salir\n"
 text_volver_jugar:
           .asciz    "Seguir jugando? [y/N]" 
-texto_reiniciar:
-          .asciz    "\n\nREINICIAR..."
 texto_diccionario_inicio:
           .asciz    "\n\nDiccionario:\n"
 texto_diccionario_final:
@@ -125,11 +123,6 @@ jugar:
           lbeq       menu
           
           ;; Reinicio
-          pshs      a,x
-          ldx       #texto_reiniciar
-          lda       #1
-          lbsr      imprime_cadena_color
-          puls      a,x
           bra       jugar
 
 fin_juego:
