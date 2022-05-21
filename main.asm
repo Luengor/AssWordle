@@ -7,7 +7,7 @@
 
 ;; Distintas cadenas
 texto_menu:
-          .ascii  "\nWORDLE (v4.20)\n"
+          .ascii  "\nWORDLE (v5.00)\n"
           .ascii    "1) Ver Diccionario\n"
           .ascii    "2) Jugar\n"
           .asciz    "S) Salir\n"
