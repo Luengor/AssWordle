@@ -23,8 +23,9 @@ texto_diccionario_final:
 ;; Importadiones globales
           .globl    imprime_valor_decimal
           .globl    imprime_cadena_color
+          .globl    imprime_cadena_x
+          .globl    imprime_cadena_y
           .globl    imprime_palabra
-          .globl    imprime_cadena
           .globl    palabras
           .globl    normal
           .globl    clear
@@ -37,17 +38,15 @@ main:
 
           ;; Pongo el texto en negrita
           ldx       #bold
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
 
           ldx       #palabras
 menu:
           ;; Limpio la pantalla y muestro el menú
-          pshs      x
-          ldx       #clear
-          lbsr      imprime_cadena
-          ldx       #texto_menu
-          lbsr      imprime_cadena
-          puls      x
+          ldy       #clear
+          lbsr      imprime_cadena_y
+          ldy       #texto_menu
+          lbsr      imprime_cadena_y
 
           ;; Leo la opción en b
           ldb       0xFF02
@@ -66,11 +65,9 @@ menu:
           bra       menu
 
 diccionario:
-          pshs      x
-          
           ;; Imprimo comienzo diccionario
           ldx       #texto_diccionario_inicio
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
 
           ;; Bucle para imprimir todas las palabras
           lda       #0
@@ -94,10 +91,9 @@ diccionario_bucle:
           bra       diccionario_bucle
 diccionario_fin:
           ;; Imprimo el número de palabras
-          ldx       #texto_diccionario_final
-          lbsr      imprime_cadena
+          ldy       #texto_diccionario_final
+          lbsr      imprime_cadena_y
           lbsr      imprime_valor_decimal
-          puls      x
 
           ldb       #'\n
           stb       0xFF00
@@ -107,10 +103,8 @@ diccionario_fin:
 
 jugar:
           ;; Limpio la pantalla
-          pshs      x
-          ldx       #clear
-          lbsr      imprime_cadena
-          puls      x
+          ldy       #clear
+          lbsr      imprime_cadena_y
 
           ;; Empiezo un juego
           ldy       #0xF000
@@ -137,15 +131,14 @@ fin_juego:
           leax      5,x
           lda       ,x
           cmpa      #0
-          lbne      volver_a_jugar
+          bne       volver_a_jugar
           ldx       #palabras
-          lbra      volver_a_jugar 
 
 volver_a_jugar:
           ;; Pregunto si se vuelve a jugar
           pshs      x
           ldx       #text_volver_jugar
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           puls      x
 
           ;; y/n
@@ -158,7 +151,7 @@ volver_a_jugar:
 acabar:   
           ;; Quito la negrita
           ldx       #normal
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
 
           ;; Fin
           clra

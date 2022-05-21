@@ -22,7 +22,9 @@ palabra_no_en_diccionario:
 ;; Globales
           .globl    game
           .globl    lee_palabra
-          .globl    imprime_cadena
+          .globl    imprime_palabra
+          .globl    imprime_cadena_x
+          .globl    imprime_cadena_y
           .globl    compara_palabras
           .globl    imprime_cadena_color
           .globl    imprime_cadena_wordle
@@ -73,7 +75,7 @@ game_loop:
 
           pshs      x                             ;; s: a - x
           ldx       #palabra_no_en_diccionario
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           puls      x                             ;; s: a
 
 imprime:
@@ -133,7 +135,7 @@ imprime_tabla:
           ;; Imprimo la cabeza de la tabla
           pshs      x                             ;; s: a - x
           ldx       #comienzo_tabla
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           puls      x                             ;; s: a
 
           lda       #0
@@ -150,7 +152,7 @@ bucle_anterior:
           ;; Imprimo el comienzo de linea
           pshs      x                             ;; s: a - a2 - x
           ldx       #comienzo_linea
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           puls      x                             ;; s: a - a2
 
           ;; Imprimo la palabra
@@ -164,7 +166,7 @@ bucle_anterior:
           ;; Imprimo el fin de linea
           pshs      x                             ;; s: a - a2 - x
           ldx       #fin_linea
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           puls      x                             ;; s: a - a2
 
           ;; Incremento
@@ -182,7 +184,7 @@ bucle_next:
           adda      #'1
           sta       0xFF00
           suba      #'1
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           inca
           bra       bucle_next 
 

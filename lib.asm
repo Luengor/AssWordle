@@ -18,9 +18,10 @@ cadena_leer:
           .globl    imprime_cadena_wordle
           .globl    imprime_valor_decimal
           .globl    imprime_cadena_color
-          .globl    compara_palabras
           .globl    imprime_palabra
-          .globl    imprime_cadena
+          .globl    imprime_cadena_x
+          .globl    imprime_cadena_y
+          .globl    compara_palabras
           .globl    lee_palabra
 
           .globl    bold
@@ -75,18 +76,23 @@ ivl_divide_fin:
 ; Salida:  Ninguna                                                            ;
 ; Afecta:  X                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-imprime_cadena:
+imprime_cadena_x:
           pshs      a,x
-ic_sgte:
+icx_sgte:
           lda       ,x+          
           cmpa      #0
-          beq       ic_return
+          beq       icx_return
           sta       0xFF00
-          bra       ic_sgte
-ic_return:
+          bra       icx_sgte
+icx_return:
           puls      a,x,pc
 
 
+imprime_cadena_y:
+          exg       x,y
+          bsr       imprime_cadena_x
+          exg       y,x
+          rts
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; imprime_cadena_color:                                                       ;
@@ -99,19 +105,17 @@ ic_return:
 ; Afecta:  A                                                                  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 imprime_cadena_color:
-          pshs      x
-          ldx       #colors
+          pshs      y
+          ldy       #colors
           lsla lsla lsla            ;; Mickey herramienta usada aquí,
-          leax      a,x             ;; explicada en el pdf.
-          lbsr      imprime_cadena
-          puls      x
+          leay      a,y             ;; explicada en el pdf.
+          lbsr      imprime_cadena_y
 
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
 
-          pshs      x
-          ldx       #colors+24      ;; 8 * 3 = 24
-          lbsr      imprime_cadena
-          puls      x,pc
+          ldy       #colors+24      ;; 8 * 3 = 24
+          lbsr      imprime_cadena_y
+          puls      y,pc
 
 
 
@@ -221,13 +225,13 @@ imprime_caracter_color:
           ldx       #colors
           lsla lsla lsla            ;; Mickey
           leax      a,x
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           
 ic_caracter:
           stb       0xFF00
           ldx       #colors
           leax      24,x
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
           puls      x,pc
 
 
@@ -324,7 +328,7 @@ lp_bucle_limpiar_fin:
           ldx       #cadena_leer
           lda       #0
 
-          lbsr      imprime_cadena
+          lbsr      imprime_cadena_x
 
           ;; Entro en un bucle para leer las letras hasta que haya 5
 lp_bucle_leer:
@@ -353,10 +357,8 @@ lp_invalido:
           beq       lp_return_mal
 
           ;; Si no se cumple ningún caso, ignoro el input
-          lbsr      imprime_cadena
-          exg       x,y
-          lbsr      imprime_cadena
-          exg       x,y
+          lbsr      imprime_cadena_x
+          lbsr      imprime_cadena_y
           bra       lp_bucle_leer
 
 lp_valido:
@@ -375,10 +377,8 @@ lp_back:
           inca
 
           ;; Vuelvo a imprimir PALABRA: y lo escrito antes
-          lbsr      imprime_cadena
-          exg       x,y
-          lbsr      imprime_cadena
-          exg       y,x
+          lbsr      imprime_cadena_x
+          lbsr      imprime_cadena_y
 
           ;; Decremento la letra actual si es distinta de 0
           cmpa      #0
